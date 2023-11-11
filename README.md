@@ -1,4 +1,4 @@
-# Task Manager Mobile App
+# Task Manager App
 
 A new Flutter project.
 
