@@ -38,7 +38,7 @@ class _MainBottomNavScreenState extends State<MainBottomNavScreen> {
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
-            label: "New",
+            label: "New Task",
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.sync_sharp),

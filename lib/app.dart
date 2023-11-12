@@ -25,7 +25,7 @@ class TaskManagerApp extends StatelessWidget {
             titleLarge: TextStyle(
               fontFamily: 'poppins',
               fontWeight: FontWeight.w700,
-              fontSize: 16,
+              fontSize: 15,
               color: Colors.white,
             ),
             titleSmall: TextStyle(
