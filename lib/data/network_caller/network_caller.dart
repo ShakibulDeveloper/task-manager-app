@@ -27,6 +27,7 @@ class NetworkCaller {
         );
       }
     } catch (e) {
+      log(e.toString());
       return NetworkResponse(isSuccess: false, errorMessage: e.toString());
     }
   }
