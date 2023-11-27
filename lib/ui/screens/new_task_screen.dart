@@ -1,4 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:task_manager_app/data/models/task_count.dart';
+import 'package:task_manager_app/data/models/task_list_model.dart';
+import 'package:task_manager_app/data/models/task_list_status_count_model.dart';
+import 'package:task_manager_app/data/network_caller/network_caller.dart';
+import 'package:task_manager_app/data/network_caller/network_response.dart';
+import 'package:task_manager_app/data/utility/urls.dart';
 import 'package:task_manager_app/style/style.dart';
 import 'package:task_manager_app/ui/screens/add_new_task_screen.dart';
 import 'package:task_manager_app/ui/widgets/summary_card.dart';
@@ -13,6 +19,51 @@ class NewTaskScreen extends StatefulWidget {
 }
 
 class _NewTaskScreenState extends State<NewTaskScreen> {
+  bool getTaskListInProgress = false;
+  bool getTaskStatusCountInProgress = false;
+  TaskListStatusCountModel taskListStatusCountModel =
+      TaskListStatusCountModel();
+  TaskListModel taskListModel = TaskListModel();
+
+  Future<void> getTaskStatusCount() async {
+    getTaskStatusCountInProgress = true;
+    if (mounted) {
+      setState(() {});
+    }
+    NetworkResponse response =
+        await NetworkCaller.getRequest(Urls.getTaskStatusCount);
+    if (response.isSuccess) {
+      taskListStatusCountModel =
+          TaskListStatusCountModel.fromJson(response.jsonResponse);
+    }
+    getTaskStatusCountInProgress = false;
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  Future<void> getTaskList() async {
+    getTaskListInProgress = true;
+    if (mounted) {
+      setState(() {});
+    }
+    NetworkResponse response = await NetworkCaller.getRequest(Urls.getTaskList);
+    if (response.isSuccess) {
+      taskListModel = TaskListModel.fromJson(response.jsonResponse);
+    }
+    getTaskListInProgress = false;
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    getTaskStatusCount();
+    getTaskList();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -20,36 +71,46 @@ class _NewTaskScreenState extends State<NewTaskScreen> {
         child: Column(
           children: [
             const TopProfileSummeryCard(),
-            const SizedBox(height: 4),
-            const SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: [
-                  SummaryCard(
-                    summaryCount: 92,
-                    summaryTitle: 'New Task',
-                  ),
-                  SummaryCard(
-                    summaryCount: 92,
-                    summaryTitle: 'New Task',
-                  ),
-                  SummaryCard(
-                    summaryCount: 92,
-                    summaryTitle: 'New Task',
-                  ),
-                  SummaryCard(
-                    summaryCount: 92,
-                    summaryTitle: 'New Task',
-                  ),
-                ],
+            Visibility(
+              visible: getTaskStatusCountInProgress == false &&
+                  (taskListStatusCountModel.taskCountList?.isNotEmpty ?? false),
+              replacement: LinearProgressIndicator(
+                color: PrimaryColor.color,
+                backgroundColor: Colors.grey,
+              ),
+              child: SizedBox(
+                height: 100,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount:
+                      taskListStatusCountModel.taskCountList?.length ?? 0,
+                  itemBuilder: (context, index) {
+                    TaskCount taskCount =
+                        taskListStatusCountModel.taskCountList![index];
+                    return FittedBox(
+                      child: SummaryCard(
+                        summaryCount: taskCount.sum.toString(),
+                        summaryTitle: taskCount.sId ?? '',
+                      ),
+                    );
+                  },
+                ),
               ),
             ),
             Expanded(
-              child: ListView.builder(
-                itemCount: 6,
-                itemBuilder: (context, index) {
-                  return const TaskListCard();
-                },
+              child: Visibility(
+                visible: getTaskListInProgress == false,
+                replacement: Center(
+                  child: CircularProgressIndicator(color: PrimaryColor.color),
+                ),
+                child: ListView.builder(
+                  itemCount: taskListModel.taskList?.length ?? 0,
+                  itemBuilder: (context, index) {
+                    return TaskListCard(
+                      task: taskListModel.taskList![index],
+                    );
+                  },
+                ),
               ),
             ),
           ],

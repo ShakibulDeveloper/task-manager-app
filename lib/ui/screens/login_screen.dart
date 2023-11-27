@@ -149,6 +149,7 @@ class _LoginScreenState extends State<LoginScreen> {
         "email": _emailInputTEController.text.trim(),
         "password": _passwordInputTEController.text,
       },
+      isLogin: true,
     );
 
     loginInProgress = false;

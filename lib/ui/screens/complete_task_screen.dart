@@ -21,7 +21,7 @@ class _CompleteTaskScreenState extends State<CompleteTaskScreen> {
               child: ListView.builder(
                 itemCount: 8,
                 itemBuilder: (context, index) {
-                  return const TaskListCard();
+                  // return const TaskListCard();
                 },
               ),
             )
