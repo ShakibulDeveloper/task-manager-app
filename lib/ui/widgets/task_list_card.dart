@@ -86,7 +86,41 @@ class _TaskListCardState extends State<TaskListCard> {
                         icon: const Icon(Icons.edit),
                       ),
                       IconButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          showDialog(
+                              context: context,
+                              builder: (context) {
+                                return AlertDialog(
+                                  title: const Text(
+                                    'Warning',
+                                    style: TextStyle(color: Colors.black),
+                                  ),
+                                  content: const Text(
+                                    "Are you sure that you want to delete it permanently?",
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: deleteTask,
+                                      child: const Text(
+                                        'Delete Task',
+                                        style: TextStyle(color: Colors.red),
+                                      ),
+                                    ),
+                                    TextButton(
+                                      onPressed: () {
+                                        Navigator.pop(context);
+                                      },
+                                      child: const Text(
+                                        'Cancel',
+                                        style: TextStyle(
+                                          color: Colors.grey,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              });
+                        },
                         icon: const Icon(Icons.delete),
                       ),
                     ],
@@ -136,5 +170,19 @@ class _TaskListCardState extends State<TaskListCard> {
             ],
           );
         });
+  }
+
+  Future<void> deleteTask() async {
+    if (mounted) {
+      Navigator.pop(context);
+    }
+
+    final response = await NetworkCaller.getRequest(
+      Urls.deleteTask(widget.task.sId.toString()),
+    );
+
+    if (response.isSuccess) {
+      widget.onStatusChangeRefresh();
+    }
   }
 }

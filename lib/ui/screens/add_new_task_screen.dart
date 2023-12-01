@@ -4,6 +4,7 @@ import 'package:task_manager_app/data/network_caller/network_response.dart';
 import 'package:task_manager_app/data/utility/urls.dart';
 import 'package:task_manager_app/style/style.dart';
 import 'package:task_manager_app/ui/controller/input_validations.dart';
+import 'package:task_manager_app/ui/screens/new_task_screen.dart';
 import 'package:task_manager_app/ui/widgets/background_image.dart';
 import 'package:task_manager_app/ui/widgets/snack_bar.dart';
 import 'package:task_manager_app/ui/widgets/top_profile_summary_card.dart';
@@ -26,68 +27,79 @@ class _AddNewTaskScreenState extends State<AddNewTaskScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        child: Column(
-          children: [
-            const TopProfileSummeryCard(),
-            Expanded(
-              child: WithBackGroundImage(
-                child: SingleChildScrollView(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 40,
-                    ),
-                    child: Form(
-                      key: _formKey,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            "Add New Task",
-                            style: Theme.of(context).textTheme.bodyLarge,
-                          ),
-                          const SizedBox(height: 8),
-                          TextFormField(
-                            controller: _subjectInputTEController,
-                            decoration: const InputDecoration(
-                              hintText: "Subject",
+    return WillPopScope(
+      onWillPop: () async {
+        await Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const NewTaskScreen(),
+            ),
+            (route) => false);
+        return false;
+      },
+      child: Scaffold(
+        body: SafeArea(
+          child: Column(
+            children: [
+              const TopProfileSummeryCard(),
+              Expanded(
+                child: WithBackGroundImage(
+                  child: SingleChildScrollView(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 40,
+                      ),
+                      child: Form(
+                        key: _formKey,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "Add New Task",
+                              style: Theme.of(context).textTheme.bodyLarge,
                             ),
-                            validator: FormValidation.inputValidation,
-                          ),
-                          const SizedBox(height: 8),
-                          TextFormField(
-                            controller: _descriptionInputTEController,
-                            maxLines: 5,
-                            decoration:
-                                const InputDecoration(hintText: "Description"),
-                            validator: FormValidation.inputValidation,
-                          ),
-                          const SizedBox(height: 8),
-                          SizedBox(
-                            width: double.infinity,
-                            child: Visibility(
-                              visible: taskInProgress == false,
-                              replacement: Center(
-                                child: CircularProgressIndicator(
-                                    color: PrimaryColor.color),
+                            const SizedBox(height: 8),
+                            TextFormField(
+                              controller: _subjectInputTEController,
+                              decoration: const InputDecoration(
+                                hintText: "Subject",
                               ),
-                              child: ElevatedButton(
-                                onPressed: _createNewTask,
-                                child: const Icon(
-                                    Icons.arrow_circle_right_outlined),
+                              validator: FormValidation.inputValidation,
+                            ),
+                            const SizedBox(height: 8),
+                            TextFormField(
+                              controller: _descriptionInputTEController,
+                              maxLines: 5,
+                              decoration: const InputDecoration(
+                                  hintText: "Description"),
+                              validator: FormValidation.inputValidation,
+                            ),
+                            const SizedBox(height: 8),
+                            SizedBox(
+                              width: double.infinity,
+                              child: Visibility(
+                                visible: taskInProgress == false,
+                                replacement: Center(
+                                  child: CircularProgressIndicator(
+                                      color: PrimaryColor.color),
+                                ),
+                                child: ElevatedButton(
+                                  onPressed: _createNewTask,
+                                  child: const Icon(
+                                      Icons.arrow_circle_right_outlined),
+                                ),
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
