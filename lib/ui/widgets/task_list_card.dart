@@ -1,13 +1,45 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart';
 import 'package:task_manager_app/data/models/task.dart';
+import 'package:task_manager_app/data/network_caller/network_caller.dart';
+import 'package:task_manager_app/data/network_caller/network_response.dart';
+import 'package:task_manager_app/data/utility/urls.dart';
 
-class TaskListCard extends StatelessWidget {
+enum TaskStatus {
+  New,
+  Progress,
+  Completed,
+  Cancelled,
+}
+
+class TaskListCard extends StatefulWidget {
   final Task task;
+  final VoidCallback onStatusChangeRefresh;
+  final Function(bool) taskUpdateStatusInProgress;
 
   const TaskListCard({
     super.key,
     required this.task,
+    required this.onStatusChangeRefresh,
+    required this.taskUpdateStatusInProgress,
   });
+
+  @override
+  State<TaskListCard> createState() => _TaskListCardState();
+}
+
+class _TaskListCardState extends State<TaskListCard> {
+  Future<void> getTaskUpdateStatus(String status) async {
+    widget.taskUpdateStatusInProgress(true);
+
+    final response = await NetworkCaller.getRequest(
+        Urls.updateTaskStatus(status, widget.task.sId ?? ''));
+    if (response.isSuccess) {
+      widget.onStatusChangeRefresh();
+    }
+
+    widget.taskUpdateStatusInProgress(false);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -16,18 +48,18 @@ class TaskListCard extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 4),
         child: ListTile(
           title: Text(
-            task.title ?? '',
+            widget.task.title ?? '',
             style: Theme.of(context).textTheme.bodyMedium,
           ),
           subtitle: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                task.description ?? '',
+                widget.task.description ?? '',
                 style: Theme.of(context).textTheme.bodySmall,
               ),
               Text(
-                'Date: ${task.createdDate}',
+                'Date: ${widget.task.createdDate}',
                 style: Theme.of(context).textTheme.bodySmall,
               ),
               const SizedBox(height: 5),
@@ -36,7 +68,7 @@ class TaskListCard extends StatelessWidget {
                 children: [
                   Chip(
                     label: Text(
-                      task.status ?? 'New',
+                      widget.task.status ?? 'New',
                       style: Theme.of(context).textTheme.titleSmall,
                     ),
                     backgroundColor: Colors.lightBlue,
@@ -48,7 +80,9 @@ class TaskListCard extends StatelessWidget {
                   Wrap(
                     children: [
                       IconButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          showUpdateDialog();
+                        },
                         icon: const Icon(Icons.edit),
                       ),
                       IconButton(
@@ -64,5 +98,43 @@ class TaskListCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  void showUpdateDialog() {
+    List<ListTile> items = TaskStatus.values
+        .map((e) => ListTile(
+              title: Text(e.name),
+              onTap: () {
+                getTaskUpdateStatus(e.name);
+                Navigator.pop(context);
+              },
+            ))
+        .toList();
+
+    showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: const Text(
+              "Update Status",
+              style: TextStyle(color: Colors.black),
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: items,
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: const Text(
+                  "Cancel",
+                  style: TextStyle(color: Colors.grey),
+                ),
+              ),
+            ],
+          );
+        });
   }
 }

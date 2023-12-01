@@ -103,13 +103,25 @@ class _NewTaskScreenState extends State<NewTaskScreen> {
                 replacement: Center(
                   child: CircularProgressIndicator(color: PrimaryColor.color),
                 ),
-                child: ListView.builder(
-                  itemCount: taskListModel.taskList?.length ?? 0,
-                  itemBuilder: (context, index) {
-                    return TaskListCard(
-                      task: taskListModel.taskList![index],
-                    );
-                  },
+                child: RefreshIndicator(
+                  color: PrimaryColor.color,
+                  onRefresh: getTaskList,
+                  child: ListView.builder(
+                    itemCount: taskListModel.taskList?.length ?? 0,
+                    itemBuilder: (context, index) {
+                      return TaskListCard(
+                        task: taskListModel.taskList![index],
+                        onStatusChangeRefresh: () {
+                          getTaskList();
+                          getTaskStatusCount();
+                        },
+                        taskUpdateStatusInProgress: (inProgress) {
+                          getTaskListInProgress = inProgress;
+                          setState(() {});
+                        },
+                      );
+                    },
+                  ),
                 ),
               ),
             ),
