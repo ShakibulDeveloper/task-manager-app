@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart';
 import 'package:task_manager_app/data/models/task.dart';
 import 'package:task_manager_app/data/network_caller/network_caller.dart';
-import 'package:task_manager_app/data/network_caller/network_response.dart';
 import 'package:task_manager_app/data/utility/urls.dart';
+import 'package:task_manager_app/style/style.dart';
 
 enum TaskStatus {
   New,
@@ -16,12 +15,14 @@ class TaskListCard extends StatefulWidget {
   final Task task;
   final VoidCallback onStatusChangeRefresh;
   final Function(bool) taskUpdateStatusInProgress;
+  final Color statusColor;
 
   const TaskListCard({
     super.key,
     required this.task,
     required this.onStatusChangeRefresh,
     required this.taskUpdateStatusInProgress,
+    this.statusColor = Colors.lightBlue,
   });
 
   @override
@@ -71,7 +72,7 @@ class _TaskListCardState extends State<TaskListCard> {
                       widget.task.status ?? 'New',
                       style: Theme.of(context).textTheme.titleSmall,
                     ),
-                    backgroundColor: Colors.lightBlue,
+                    backgroundColor: widget.statusColor,
                     labelPadding: const EdgeInsets.symmetric(
                       vertical: 0,
                       horizontal: 8,
@@ -83,7 +84,7 @@ class _TaskListCardState extends State<TaskListCard> {
                         onPressed: () {
                           showUpdateDialog();
                         },
-                        icon: const Icon(Icons.edit),
+                        icon: Icon(Icons.edit_note, color: PrimaryColor.color),
                       ),
                       IconButton(
                         onPressed: () {
@@ -121,7 +122,7 @@ class _TaskListCardState extends State<TaskListCard> {
                                 );
                               });
                         },
-                        icon: const Icon(Icons.delete),
+                        icon: const Icon(Icons.delete, color: Colors.red),
                       ),
                     ],
                   ),
@@ -176,11 +177,11 @@ class _TaskListCardState extends State<TaskListCard> {
     if (mounted) {
       Navigator.pop(context);
     }
-
+    widget.taskUpdateStatusInProgress(true);
     final response = await NetworkCaller.getRequest(
       Urls.deleteTask(widget.task.sId.toString()),
     );
-
+    widget.taskUpdateStatusInProgress(true);
     if (response.isSuccess) {
       widget.onStatusChangeRefresh();
     }

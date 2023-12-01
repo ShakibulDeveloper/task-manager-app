@@ -4,7 +4,7 @@ import 'package:task_manager_app/data/network_caller/network_response.dart';
 import 'package:task_manager_app/data/utility/urls.dart';
 import 'package:task_manager_app/style/style.dart';
 import 'package:task_manager_app/ui/controller/input_validations.dart';
-import 'package:task_manager_app/ui/screens/new_task_screen.dart';
+import 'package:task_manager_app/ui/screens/main_bottom_nav_screen.dart';
 import 'package:task_manager_app/ui/widgets/background_image.dart';
 import 'package:task_manager_app/ui/widgets/snack_bar.dart';
 import 'package:task_manager_app/ui/widgets/top_profile_summary_card.dart';
@@ -32,7 +32,7 @@ class _AddNewTaskScreenState extends State<AddNewTaskScreen> {
         await Navigator.pushAndRemoveUntil(
             context,
             MaterialPageRoute(
-              builder: (context) => const NewTaskScreen(),
+              builder: (context) => const MainBottomNavScreen(),
             ),
             (route) => false);
         return false;

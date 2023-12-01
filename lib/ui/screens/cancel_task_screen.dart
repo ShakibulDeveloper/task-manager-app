@@ -60,6 +60,7 @@ class _CancelTaskScreenState extends State<CancelTaskScreen> {
                     itemCount: taskListModel.taskList?.length ?? 0,
                     itemBuilder: (context, index) {
                       return TaskListCard(
+                        statusColor: Colors.redAccent,
                         task: taskListModel.taskList![index],
                         onStatusChangeRefresh: () {
                           getTaskList();

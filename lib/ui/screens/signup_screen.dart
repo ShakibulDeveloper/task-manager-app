@@ -173,9 +173,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
       } else {
         if (mounted) {
           showSnackBar(
-            context,
-            "Account creation failed! Please try again.",
-          );
+              context, "Account creation failed! Please try again.", true);
         }
       }
     }

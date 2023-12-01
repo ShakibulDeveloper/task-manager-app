@@ -60,6 +60,7 @@ class _CompleteTaskScreenState extends State<CompleteTaskScreen> {
                     itemCount: taskListModel.taskList?.length ?? 0,
                     itemBuilder: (context, index) {
                       return TaskListCard(
+                        statusColor: PrimaryColor.color,
                         task: taskListModel.taskList![index],
                         onStatusChangeRefresh: () {
                           getTaskList();

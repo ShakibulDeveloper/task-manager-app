@@ -60,6 +60,7 @@ class _ProgressTaskScreenState extends State<ProgressTaskScreen> {
                     itemCount: taskListModel.taskList?.length ?? 0,
                     itemBuilder: (context, index) {
                       return TaskListCard(
+                        statusColor: Colors.purple,
                         task: taskListModel.taskList![index],
                         onStatusChangeRefresh: () {
                           getTaskList();
