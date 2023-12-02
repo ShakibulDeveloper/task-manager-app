@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:task_manager_app/data/models/user_model.dart';
@@ -31,6 +33,7 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   bool updateProfileInProgress = false;
+  XFile? photo;
 
   @override
   void initState() {
@@ -63,70 +66,7 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
                           const SizedBox(height: 8),
                           InkWell(
                             onTap: () {
-                              showModalBottomSheet(
-                                  context: context,
-                                  builder: (context) {
-                                    return Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          vertical: 18.0),
-                                      child: Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: [
-                                              TextButton(
-                                                onPressed: () {
-                                                  ImagePicker().pickImage(
-                                                      source:
-                                                          ImageSource.gallery);
-                                                },
-                                                child: Column(
-                                                  children: [
-                                                    Icon(
-                                                      Icons.image,
-                                                      color: PrimaryColor.color,
-                                                      size: 34,
-                                                    ),
-                                                    const Text(
-                                                      "Gallery",
-                                                      style: TextStyle(
-                                                        color: Colors.grey,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                              const SizedBox(width: 12),
-                                              TextButton(
-                                                onPressed: () {
-                                                  ImagePicker().pickImage(
-                                                      source:
-                                                          ImageSource.camera);
-                                                },
-                                                child: Column(
-                                                  children: [
-                                                    Icon(
-                                                      Icons.camera,
-                                                      color: PrimaryColor.color,
-                                                      size: 34,
-                                                    ),
-                                                    const Text(
-                                                      "Camera",
-                                                      style: TextStyle(
-                                                        color: Colors.grey,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                    );
-                                  });
+                              showPhotoPickerBottomModal();
                             },
                             child: Container(
                               height: 50,
@@ -160,10 +100,21 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
                                   const SizedBox(width: 6),
                                   Expanded(
                                     flex: 3,
-                                    child: Text("Choose a Image",
+                                    child: Visibility(
+                                      visible: photo == null,
+                                      replacement: Text(
+                                        photo?.name ?? '',
                                         style: Theme.of(context)
                                             .textTheme
-                                            .bodySmall),
+                                            .bodySmall,
+                                      ),
+                                      child: Text(
+                                        "Choose a Image",
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodySmall,
+                                      ),
+                                    ),
                                   ),
                                 ],
                               ),
@@ -234,6 +185,8 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
   }
 
   Future<void> updateProfile() async {
+    String? imageInBase64;
+
     if (_formKey.currentState!.validate()) {
       updateProfileInProgress = true;
       if (mounted) {
@@ -249,6 +202,11 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
       if (_passwordInputTEController.text.isNotEmpty) {
         inputData["password"] = _passwordInputTEController.text;
       }
+      if (photo != null) {
+        List<int> imageInBytes = await photo!.readAsBytes();
+        imageInBase64 = base64Encode(imageInBytes);
+        inputData["photo"] = imageInBase64;
+      }
       final NetworkResponse response =
           await NetworkCaller.postRequest(Urls.profileUpdate, body: inputData);
       updateProfileInProgress = false;
@@ -261,6 +219,7 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
           firstName: _firstNameInputTEController.text.trim(),
           lastName: _lastNameInputTEController.text.trim(),
           mobile: _mobileInputTEController.text.trim(),
+          photo: imageInBase64 ?? Auth.user?.photo,
         ));
         if (mounted) {
           showSnackBar(context, "Profile Updated Successfully!");
@@ -271,5 +230,87 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
         }
       }
     }
+  }
+
+  void showPhotoPickerBottomModal() {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 18.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  TextButton(
+                    onPressed: () async {
+                      final XFile? image = await ImagePicker().pickImage(
+                        source: ImageSource.gallery,
+                        imageQuality: 50,
+                      );
+                      if (image != null) {
+                        photo = image;
+                        if (mounted) {
+                          Navigator.pop(context);
+                          setState(() {});
+                        }
+                      }
+                    },
+                    child: Column(
+                      children: [
+                        Icon(
+                          Icons.image,
+                          color: PrimaryColor.color,
+                          size: 34,
+                        ),
+                        const Text(
+                          "Gallery",
+                          style: TextStyle(
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  TextButton(
+                    onPressed: () async {
+                      final XFile? image = await ImagePicker().pickImage(
+                        source: ImageSource.camera,
+                        imageQuality: 50,
+                      );
+                      if (image != null) {
+                        photo = image;
+                        if (mounted) {
+                          Navigator.pop(context);
+                          setState(() {});
+                        }
+                      }
+                    },
+                    child: Column(
+                      children: [
+                        Icon(
+                          Icons.camera,
+                          color: PrimaryColor.color,
+                          size: 34,
+                        ),
+                        const Text(
+                          "Camera",
+                          style: TextStyle(
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 }

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:task_manager_app/style/style.dart';
@@ -19,6 +20,9 @@ class TopProfileSummeryCard extends StatefulWidget {
 }
 
 class _TopProfileSummeryCardState extends State<TopProfileSummeryCard> {
+  Uint8List imageInBytes =
+      const Base64Decoder().convert(Auth.user?.photo ?? '');
+
   @override
   Widget build(BuildContext context) {
     return ListTile(
@@ -31,9 +35,19 @@ class _TopProfileSummeryCardState extends State<TopProfileSummeryCard> {
           );
         }
       },
-      leading: CircleAvatar(
-        backgroundImage: NetworkImage(Auth.user?.photo ?? ''),
-        backgroundColor: Colors.lightGreen,
+      leading: Visibility(
+        visible: imageInBytes.isNotEmpty,
+        replacement: const CircleAvatar(
+          backgroundColor: Colors.lightGreen,
+          child: Icon(Icons.account_circle_outlined),
+        ),
+        child: CircleAvatar(
+          backgroundImage: Image.memory(
+            imageInBytes,
+            fit: BoxFit.cover,
+          ).image,
+          backgroundColor: Colors.lightGreen,
+        ),
       ),
       title: Text(
         userFullName,
