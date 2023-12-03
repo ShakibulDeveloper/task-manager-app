@@ -20,11 +20,15 @@ class TopProfileSummeryCard extends StatefulWidget {
 }
 
 class _TopProfileSummeryCardState extends State<TopProfileSummeryCard> {
-  Uint8List imageInBytes =
-      const Base64Decoder().convert(Auth.user?.photo ?? '');
+  String imageFormat = Auth.user?.photo ?? '';
 
   @override
   Widget build(BuildContext context) {
+    if (imageFormat.startsWith('data:image')) {
+      imageFormat =
+          imageFormat.replaceFirst(RegExp(r'data:image/[^;]+;base64,'), '');
+    }
+    Uint8List imageInBytes = const Base64Decoder().convert(imageFormat);
     return ListTile(
       onTap: () {
         if (widget.onTapStatus == true) {
