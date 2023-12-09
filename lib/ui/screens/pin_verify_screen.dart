@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
-import 'package:task_manager_app/data/network_caller/network_caller.dart';
-import 'package:task_manager_app/data/network_caller/network_response.dart';
-import 'package:task_manager_app/data/utility/urls.dart';
 import 'package:task_manager_app/style/style.dart';
+import 'package:task_manager_app/ui/controller/pin_verify_controller.dart';
 import 'package:task_manager_app/ui/screens/login_screen.dart';
 import 'package:task_manager_app/ui/screens/set_password_screen.dart';
 import 'package:task_manager_app/ui/widgets/background_image.dart';
@@ -19,7 +18,9 @@ class PinVerifyScreen extends StatefulWidget {
 
 class _PinVerifyScreenState extends State<PinVerifyScreen> {
   Map<String, String> pinCode = {'otp': ''};
-  bool pinVerifyInProgress = false;
+
+  final PinVerifyController _pinVerifyController =
+      Get.find<PinVerifyController>();
 
   @override
   Widget build(BuildContext context) {
@@ -60,20 +61,23 @@ class _PinVerifyScreenState extends State<PinVerifyScreen> {
                     },
                   ),
                   const SizedBox(height: 8),
-                  Visibility(
-                    visible: pinVerifyInProgress == false,
-                    replacement: Center(
-                        child: CircularProgressIndicator(
-                      color: PrimaryColor.color,
-                    )),
-                    child: SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: verifyPinCode,
-                        child: const Text("Verify"),
+                  GetBuilder<PinVerifyController>(
+                      builder: (pinVerifyController) {
+                    return Visibility(
+                      visible: pinVerifyController.pinVerifyInProgress == false,
+                      replacement: Center(
+                          child: CircularProgressIndicator(
+                        color: PrimaryColor.color,
+                      )),
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: verifyPinCode,
+                          child: const Text("Verify"),
+                        ),
                       ),
-                    ),
-                  ),
+                    );
+                  }),
                   const SizedBox(height: 48),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -87,13 +91,7 @@ class _PinVerifyScreenState extends State<PinVerifyScreen> {
                       ),
                       TextButton(
                         onPressed: () {
-                          Navigator.pushAndRemoveUntil(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const LoginScreen(),
-                            ),
-                            (route) => false,
-                          );
+                          Get.off(const LoginScreen());
                         },
                         child: Text(
                           "Sign in",
@@ -113,34 +111,17 @@ class _PinVerifyScreenState extends State<PinVerifyScreen> {
 
   Future<void> verifyPinCode() async {
     if (pinCode['otp'] != null && pinCode['otp']?.length == 6) {
-      pinVerifyInProgress = true;
-      if (mounted) {
-        setState(() {});
-      }
+      final response = await _pinVerifyController.verifyPinCode(
+          widget.email, pinCode['otp']!);
 
-      final NetworkResponse response = await NetworkCaller.getRequest(
-          Urls.verifyPinCode(widget.email, pinCode['otp']!));
-
-      pinVerifyInProgress = false;
-      if (mounted) {
-        setState(() {});
-      }
-      if (response.isSuccess && response.jsonResponse['status'] != 'fail') {
-        if (mounted) {
-          Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(
-              builder: (context) => SetPasswordScreen(
-                email: widget.email,
-                pin: pinCode['otp']!,
-              ),
-            ),
-            (route) => false,
-          );
-        }
+      if (response) {
+        Get.offAll(SetPasswordScreen(
+          email: widget.email,
+          pin: pinCode['otp']!,
+        ));
       } else {
         if (mounted) {
-          showSnackBar(context, "Invalid OTP Code.", true);
+          showSnackBar(context, _pinVerifyController.errorMessage, true);
         }
       }
     } else {

@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:task_manager_app/data/models/user_model.dart';
-import 'package:task_manager_app/data/network_caller/network_caller.dart';
-import 'package:task_manager_app/data/network_caller/network_response.dart';
-import 'package:task_manager_app/data/utility/urls.dart';
+import 'package:get/get.dart';
 import 'package:task_manager_app/style/style.dart';
-import 'package:task_manager_app/ui/controller/auth_controller.dart';
 import 'package:task_manager_app/ui/controller/input_validations.dart';
+import 'package:task_manager_app/ui/controller/login_controller.dart';
 import 'package:task_manager_app/ui/screens/forget_password_screen.dart';
 import 'package:task_manager_app/ui/screens/main_bottom_nav_screen.dart';
 import 'package:task_manager_app/ui/screens/signup_screen.dart';
@@ -25,7 +22,7 @@ class _LoginScreenState extends State<LoginScreen> {
       TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
-  bool loginInProgress = false;
+  final LoginController _loginController = Get.find<LoginController>();
 
   @override
   Widget build(BuildContext context) {
@@ -67,32 +64,29 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: 8),
                     SizedBox(
                       width: double.infinity,
-                      child: Visibility(
-                        visible: loginInProgress == false,
-                        replacement: Padding(
-                          padding: const EdgeInsets.only(top: 8),
-                          child: Center(
-                              child: CircularProgressIndicator(
-                            color: PrimaryColor.color,
-                          )),
-                        ),
-                        child: ElevatedButton(
-                            onPressed: _login,
-                            child:
-                                const Icon(Icons.arrow_circle_right_outlined)),
-                      ),
+                      child: GetBuilder<LoginController>(
+                          builder: (loginController) {
+                        return Visibility(
+                          visible: loginController.loginInProgress == false,
+                          replacement: Padding(
+                            padding: const EdgeInsets.only(top: 8),
+                            child: Center(
+                                child: CircularProgressIndicator(
+                              color: PrimaryColor.color,
+                            )),
+                          ),
+                          child: ElevatedButton(
+                              onPressed: _login,
+                              child: const Icon(
+                                  Icons.arrow_circle_right_outlined)),
+                        );
+                      }),
                     ),
                     const SizedBox(height: 48),
                     Center(
                       child: TextButton(
                         onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  const ForgetPasswordScreen(),
-                            ),
-                          );
+                          Get.to(const ForgetPasswordScreen());
                         },
                         child: const Text(
                           "Forget Password ?",
@@ -110,12 +104,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         TextButton(
                           onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const SignUpScreen(),
-                              ),
-                            );
+                            Get.to(const SignUpScreen());
                           },
                           child: Text(
                             "Sign up",
@@ -138,47 +127,17 @@ class _LoginScreenState extends State<LoginScreen> {
     if (!_formKey.currentState!.validate()) {
       return;
     }
-    loginInProgress = true;
-    if (mounted) {
-      setState(() {});
-    }
 
-    final NetworkResponse response = await NetworkCaller.postRequest(
-      Urls.login,
-      body: {
-        "email": _emailInputTEController.text.trim(),
-        "password": _passwordInputTEController.text,
-      },
-      isLogin: true,
+    final response = await _loginController.login(
+      _emailInputTEController.text.trim(),
+      _passwordInputTEController.text,
     );
 
-    loginInProgress = false;
-    if (mounted) {
-      setState(() {});
-    }
-
-    if (response.isSuccess) {
-      await Auth.saveUserInformation(
-        response.jsonResponse["token"],
-        UserModel.fromJson(response.jsonResponse['data']),
-      );
-      if (mounted) {
-        Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const MainBottomNavScreen(),
-            ),
-            (route) => false);
-      }
+    if (response) {
+      Get.offAll(const MainBottomNavScreen());
     } else {
-      if (response.statusCode == 401) {
-        if (mounted) {
-          showSnackBar(context, "Email or Password is incorrect.", true);
-        }
-      } else {
-        if (mounted) {
-          showSnackBar(context, "Login failed! Please try again.", true);
-        }
+      if (mounted) {
+        showSnackBar(context, _loginController.errorMessage, true);
       }
     }
   }

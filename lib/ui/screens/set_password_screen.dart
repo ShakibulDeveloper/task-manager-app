@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:task_manager_app/data/network_caller/network_caller.dart';
-import 'package:task_manager_app/data/network_caller/network_response.dart';
-import 'package:task_manager_app/data/utility/urls.dart';
+import 'package:get/get.dart';
 import 'package:task_manager_app/style/style.dart';
 import 'package:task_manager_app/ui/controller/input_validations.dart';
+import 'package:task_manager_app/ui/controller/set_password_controller.dart';
 import 'package:task_manager_app/ui/screens/login_screen.dart';
 import 'package:task_manager_app/ui/widgets/background_image.dart';
 import 'package:task_manager_app/ui/widgets/snack_bar.dart';
@@ -24,7 +23,8 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
       TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
-  bool setPasswordInProgress = false;
+  final SetPasswordController _setPasswordController =
+      Get.find<SetPasswordController>();
 
   @override
   Widget build(BuildContext context) {
@@ -67,21 +67,25 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
                       validator: FormValidation.inputValidation,
                     ),
                     const SizedBox(height: 8),
-                    Visibility(
-                      visible: setPasswordInProgress == false,
-                      replacement: Center(
-                        child: CircularProgressIndicator(
-                          color: PrimaryColor.color,
+                    GetBuilder<SetPasswordController>(
+                        builder: (setPasswordController) {
+                      return Visibility(
+                        visible: setPasswordController.setPasswordInProgress ==
+                            false,
+                        replacement: Center(
+                          child: CircularProgressIndicator(
+                            color: PrimaryColor.color,
+                          ),
                         ),
-                      ),
-                      child: SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: setNewPassword,
-                          child: const Text("Confirm"),
+                        child: SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: setNewPassword,
+                            child: const Text("Confirm"),
+                          ),
                         ),
-                      ),
-                    ),
+                      );
+                    }),
                     const SizedBox(height: 48),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -95,13 +99,7 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
                         ),
                         TextButton(
                           onPressed: () {
-                            Navigator.pushAndRemoveUntil(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const LoginScreen(),
-                              ),
-                              (route) => false,
-                            );
+                            Get.offAll(const LoginScreen());
                           },
                           child: Text(
                             "Sign in",
@@ -125,34 +123,17 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
       if (_newPasswordTEController.text.length > 7) {
         if (_newPasswordTEController.text ==
             _confirmPasswordTEController.text) {
-          setPasswordInProgress = true;
-          if (mounted) {
-            setState(() {});
-          }
-          final NetworkResponse response = await NetworkCaller.postRequest(
-            Urls.setNewPassword,
-            body: {
-              "email": widget.email,
-              "OTP": widget.pin,
-              "password": _newPasswordTEController.text,
-            },
+          final response = await _setPasswordController.setNewPassword(
+            widget.email,
+            widget.pin,
+            _newPasswordTEController.text,
           );
-          setPasswordInProgress = false;
-          if (mounted) {
-            setState(() {});
-          }
 
-          if (response.isSuccess) {
-            if (mounted) {
-              Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(builder: (context) => const LoginScreen()),
-                (route) => false,
-              );
-            }
+          if (response) {
+            Get.offAll(const LoginScreen());
           } else {
             if (mounted) {
-              showSnackBar(context, "Action Failed! Please try again.", true);
+              showSnackBar(context, _setPasswordController.errorMessage, true);
             }
           }
         } else {

@@ -7,7 +7,7 @@ publish_to: 'none'
 version: 1.0.0+1
 
 environment:
-  sdk: '>=3.0.1 <4.0.0'
+  sdk: '>=3.2.3 <4.0.0'
 
 
 dependencies:
@@ -22,6 +22,7 @@ dependencies:
   shared_preferences: ^2.2.2
   image_picker: ^1.0.4
   pin_code_fields: ^8.0.1
+  get: ^4.6.6
 
 dev_dependencies:
   flutter_test:

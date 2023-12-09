@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:task_manager_app/data/network_caller/network_caller.dart';
-import 'package:task_manager_app/data/network_caller/network_response.dart';
-import 'package:task_manager_app/data/utility/urls.dart';
+import 'package:get/get.dart';
 import 'package:task_manager_app/style/style.dart';
 import 'package:task_manager_app/ui/controller/input_validations.dart';
+import 'package:task_manager_app/ui/controller/sign_up_controller.dart';
 import 'package:task_manager_app/ui/widgets/background_image.dart';
 import 'package:task_manager_app/ui/widgets/snack_bar.dart';
 
@@ -26,7 +25,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
       TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
-  bool isSignUpInProgress = false;
+  final SignUpController _signUpController = Get.find<SignUpController>();
 
   @override
   Widget build(BuildContext context) {
@@ -91,24 +90,27 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       validator: FormValidation.inputValidation,
                     ),
                     const SizedBox(height: 8),
-                    Visibility(
-                      visible: isSignUpInProgress == false,
-                      replacement: Padding(
-                        padding: const EdgeInsets.only(top: 12),
-                        child: Center(
-                          child: CircularProgressIndicator(
-                            color: PrimaryColor.color,
+                    GetBuilder<SignUpController>(builder: (signUpController) {
+                      return Visibility(
+                        visible: signUpController.isSignUpInProgress == false,
+                        replacement: Padding(
+                          padding: const EdgeInsets.only(top: 12),
+                          child: Center(
+                            child: CircularProgressIndicator(
+                              color: PrimaryColor.color,
+                            ),
                           ),
                         ),
-                      ),
-                      child: SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: _signUp,
-                          child: const Icon(Icons.arrow_circle_right_outlined),
+                        child: SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: _signUp,
+                            child:
+                                const Icon(Icons.arrow_circle_right_outlined),
+                          ),
                         ),
-                      ),
-                    ),
+                      );
+                    }),
                     const SizedBox(height: 35),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -122,7 +124,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         ),
                         TextButton(
                           onPressed: () {
-                            Navigator.pop(context);
+                            Get.back();
                           },
                           child: Text(
                             "Sign in",
@@ -143,37 +145,21 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   Future<void> _signUp() async {
     if (_formKey.currentState!.validate()) {
-      isSignUpInProgress = true;
-      if (mounted) {
-        setState(() {});
-      }
-
-      final NetworkResponse response = await NetworkCaller.postRequest(
-        Urls.registration,
-        body: {
-          "email": _emailInputTEController.text.trim(),
-          "firstName": _firstNameInputTEController.text.trim(),
-          "lastName": _lastNameInputTEController.text.trim(),
-          "mobile": _mobileNumberInputTEController.text.trim(),
-          "password": _passwordInputTEController.text,
-        },
+      final response = await _signUpController.signUp(
+        _emailInputTEController.text.trim(),
+        _firstNameInputTEController.text.trim(),
+        _lastNameInputTEController.text.trim(),
+        _mobileNumberInputTEController.text.trim(),
+        _passwordInputTEController.text,
       );
-      isSignUpInProgress = false;
-      if (mounted) {
-        setState(() {});
-      }
-      if (mounted) {
-        if (response.isSuccess) {
-          _clearInputText();
-          showSnackBar(
-            context,
-            "Account Created Successfully! Please login in",
-          );
+      if (response) {
+        _clearInputText();
+        if (mounted) {
+          showSnackBar(context, _signUpController.message);
         }
       } else {
         if (mounted) {
-          showSnackBar(
-              context, "Account creation failed! Please try again.", true);
+          showSnackBar(context, _signUpController.message, true);
         }
       }
     }

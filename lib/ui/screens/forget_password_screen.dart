@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:task_manager_app/data/network_caller/network_caller.dart';
-import 'package:task_manager_app/data/network_caller/network_response.dart';
-import 'package:task_manager_app/data/utility/urls.dart';
+import 'package:get/get.dart';
 import 'package:task_manager_app/style/style.dart';
+import 'package:task_manager_app/ui/controller/forget_password_controller.dart';
 import 'package:task_manager_app/ui/controller/input_validations.dart';
 import 'package:task_manager_app/ui/screens/pin_verify_screen.dart';
 import 'package:task_manager_app/ui/widgets/background_image.dart';
@@ -19,7 +18,8 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
   final TextEditingController _emailInputTEController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
-  bool emailVerifyInProgress = false;
+  final ForgetPasswordController _forgetPasswordController =
+      Get.find<ForgetPasswordController>();
 
   @override
   Widget build(BuildContext context) {
@@ -55,21 +55,26 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
                       validator: FormValidation.emailValidation,
                     ),
                     const SizedBox(height: 8),
-                    Visibility(
-                      visible: emailVerifyInProgress == false,
-                      replacement: Center(
-                        child: CircularProgressIndicator(
-                          color: PrimaryColor.color,
+                    GetBuilder<ForgetPasswordController>(
+                        builder: (forgetPasswordController) {
+                      return Visibility(
+                        visible:
+                            forgetPasswordController.emailVerifyInProgress ==
+                                false,
+                        replacement: Center(
+                          child: CircularProgressIndicator(
+                            color: PrimaryColor.color,
+                          ),
                         ),
-                      ),
-                      child: SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                            onPressed: verifyEmailAddress,
-                            child:
-                                const Icon(Icons.arrow_circle_right_outlined)),
-                      ),
-                    ),
+                        child: SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                              onPressed: verifyEmailAddress,
+                              child: const Icon(
+                                  Icons.arrow_circle_right_outlined)),
+                        ),
+                      );
+                    }),
                     const SizedBox(height: 48),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -104,30 +109,16 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
 
   Future<void> verifyEmailAddress() async {
     if (_formKey.currentState!.validate()) {
-      emailVerifyInProgress = true;
-      if (mounted) {
-        setState(() {});
-      }
-      final NetworkResponse response = await NetworkCaller.getRequest(
-          Urls.verifyEmailAddress(_emailInputTEController.text.trim()));
+      final response = await _forgetPasswordController
+          .verifyEmailAddress(_emailInputTEController.text.trim());
 
-      emailVerifyInProgress = false;
-      if (mounted) {
-        setState(() {});
-      }
-      if (response.isSuccess && response.jsonResponse['status'] == 'success') {
-        if (mounted) {
-          Navigator.pushAndRemoveUntil(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => PinVerifyScreen(
-                        email: _emailInputTEController.text.trim(),
-                      )),
-              (route) => false);
-        }
+      if (response) {
+        Get.offAll(PinVerifyScreen(
+          email: _emailInputTEController.text.trim(),
+        ));
       } else {
         if (mounted) {
-          showSnackBar(context, "Action Failed! Please try again.", true);
+          showSnackBar(context, _forgetPasswordController.errorMessage, true);
         }
       }
     }

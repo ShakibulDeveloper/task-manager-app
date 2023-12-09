@@ -1,4 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:task_manager_app/ui/controller/forget_password_controller.dart';
+import 'package:task_manager_app/ui/controller/get_task_list_controller.dart';
+import 'package:task_manager_app/ui/controller/get_task_status_count_controller.dart';
+import 'package:task_manager_app/ui/controller/login_controller.dart';
+import 'package:task_manager_app/ui/controller/pin_verify_controller.dart';
+import 'package:task_manager_app/ui/controller/set_password_controller.dart';
+import 'package:task_manager_app/ui/controller/sign_up_controller.dart';
+import 'package:task_manager_app/ui/controller/splash_screen_time_out_controller.dart';
 import 'package:task_manager_app/ui/screens/splash_screen.dart';
 
 class TaskManagerApp extends StatelessWidget {
@@ -8,11 +17,12 @@ class TaskManagerApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return GetMaterialApp(
       navigatorKey: navigatorKey,
       home: const SplashScreen(),
       title: "Task Manager",
       debugShowCheckedModeBanner: false,
+      initialBinding: ControllerBinder(),
       theme: ThemeData(
           textTheme: const TextTheme(
             bodyLarge: TextStyle(
@@ -51,5 +61,19 @@ class TaskManagerApp extends StatelessWidget {
             ),
           )),
     );
+  }
+}
+
+class ControllerBinder extends Bindings {
+  @override
+  void dependencies() {
+    Get.put(LoginController());
+    Get.put(GetTaskListController());
+    Get.put(GetTaskStatusCountController());
+    Get.put(SplashScreenTimeOutController());
+    Get.put(ForgetPasswordController());
+    Get.put(PinVerifyController());
+    Get.put(SetPasswordController());
+    Get.put(SignUpController());
   }
 }
