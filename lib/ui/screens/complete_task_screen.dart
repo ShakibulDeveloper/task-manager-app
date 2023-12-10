@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:task_manager_app/data/models/task_list_model.dart';
-import 'package:task_manager_app/data/network_caller/network_caller.dart';
-import 'package:task_manager_app/data/network_caller/network_response.dart';
-import 'package:task_manager_app/data/utility/urls.dart';
+import 'package:get/get.dart';
 import 'package:task_manager_app/style/style.dart';
+import 'package:task_manager_app/ui/controller/get_complete_task_list_controller.dart';
 import 'package:task_manager_app/ui/widgets/task_list_card.dart';
 import 'package:task_manager_app/ui/widgets/top_profile_summary_card.dart';
 
@@ -15,29 +13,13 @@ class CompleteTaskScreen extends StatefulWidget {
 }
 
 class _CompleteTaskScreenState extends State<CompleteTaskScreen> {
-  bool getTaskListInProgress = false;
-  TaskListModel taskListModel = TaskListModel();
-
-  Future<void> getTaskList() async {
-    getTaskListInProgress = true;
-    if (mounted) {
-      setState(() {});
-    }
-    NetworkResponse response =
-        await NetworkCaller.getRequest(Urls.getCompleteTaskList);
-    if (response.isSuccess) {
-      taskListModel = TaskListModel.fromJson(response.jsonResponse);
-    }
-    getTaskListInProgress = false;
-    if (mounted) {
-      setState(() {});
-    }
-  }
+  final GetCompleteTaskListController _getCompleteTaskListController =
+      Get.find<GetCompleteTaskListController>();
 
   @override
   void initState() {
     super.initState();
-    getTaskList();
+    _getCompleteTaskListController.getTaskList();
   }
 
   @override
@@ -48,32 +30,37 @@ class _CompleteTaskScreenState extends State<CompleteTaskScreen> {
           children: [
             const TopProfileSummeryCard(),
             Expanded(
-              child: Visibility(
-                visible: getTaskListInProgress == false,
-                replacement: Center(
-                  child: CircularProgressIndicator(color: PrimaryColor.color),
-                ),
-                child: RefreshIndicator(
-                  color: PrimaryColor.color,
-                  onRefresh: getTaskList,
-                  child: ListView.builder(
-                    itemCount: taskListModel.taskList?.length ?? 0,
-                    itemBuilder: (context, index) {
-                      return TaskListCard(
-                        statusColor: PrimaryColor.color,
-                        task: taskListModel.taskList![index],
-                        onStatusChangeRefresh: () {
-                          getTaskList();
-                        },
-                        taskUpdateStatusInProgress: (inProgress) {
-                          getTaskListInProgress = inProgress;
-                          setState(() {});
-                        },
-                      );
-                    },
+              child: GetBuilder<GetCompleteTaskListController>(
+                  builder: (getCompleteTaskListController) {
+                return Visibility(
+                  visible:
+                      getCompleteTaskListController.getTaskListInProgress ==
+                          false,
+                  replacement: Center(
+                    child: CircularProgressIndicator(color: PrimaryColor.color),
                   ),
-                ),
-              ),
+                  child: RefreshIndicator(
+                    color: PrimaryColor.color,
+                    onRefresh: getCompleteTaskListController.getTaskList,
+                    child: ListView.builder(
+                      itemCount: getCompleteTaskListController
+                              .taskListModel.taskList?.length ??
+                          0,
+                      itemBuilder: (context, index) {
+                        return TaskListCard(
+                          statusColor: PrimaryColor.color,
+                          task: getCompleteTaskListController
+                              .taskListModel.taskList![index],
+                          onStatusChangeRefresh: () {
+                            getCompleteTaskListController.getTaskList();
+                          },
+                          taskUpdateStatusInProgress: (inProgress) {},
+                        );
+                      },
+                    ),
+                  ),
+                );
+              }),
             )
           ],
         ),

@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:task_manager_app/ui/controller/create_new_task_controller.dart';
 import 'package:task_manager_app/ui/controller/forget_password_controller.dart';
+import 'package:task_manager_app/ui/controller/get_cancel_task_list_controller.dart';
+import 'package:task_manager_app/ui/controller/get_complete_task_list_controller.dart';
+import 'package:task_manager_app/ui/controller/get_in_progress_task_list_controller.dart';
 import 'package:task_manager_app/ui/controller/get_task_list_controller.dart';
 import 'package:task_manager_app/ui/controller/get_task_status_count_controller.dart';
 import 'package:task_manager_app/ui/controller/login_controller.dart';
@@ -75,5 +79,9 @@ class ControllerBinder extends Bindings {
     Get.put(PinVerifyController());
     Get.put(SetPasswordController());
     Get.put(SignUpController());
+    Get.put(CreateNewTaskController());
+    Get.put(GetInProgressTaskListController());
+    Get.put(GetCompleteTaskListController());
+    Get.put(GetCancelTaskListController());
   }
 }

@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:task_manager_app/style/style.dart';
 import 'package:task_manager_app/ui/controller/auth_controller.dart';
 import 'package:task_manager_app/ui/screens/login_screen.dart';
@@ -32,11 +33,7 @@ class _TopProfileSummeryCardState extends State<TopProfileSummeryCard> {
     return ListTile(
       onTap: () {
         if (widget.onTapStatus == true) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => const UpdateProfileScreen()),
-          );
+          Get.to(const UpdateProfileScreen());
         }
       },
       leading: Visibility(
@@ -64,15 +61,7 @@ class _TopProfileSummeryCardState extends State<TopProfileSummeryCard> {
       trailing: IconButton(
         onPressed: () async {
           await Auth.clearUserAuthState();
-          if (mounted) {
-            Navigator.pushAndRemoveUntil(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const LoginScreen(),
-              ),
-              (route) => false,
-            );
-          }
+          Get.offAll(const LoginScreen());
         },
         icon: const Icon(Icons.logout),
       ),
