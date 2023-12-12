@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:task_manager_app/data/models/task.dart';
 import 'package:task_manager_app/data/network_caller/network_caller.dart';
 import 'package:task_manager_app/data/utility/urls.dart';
@@ -30,18 +31,6 @@ class TaskListCard extends StatefulWidget {
 }
 
 class _TaskListCardState extends State<TaskListCard> {
-  Future<void> getTaskUpdateStatus(String status) async {
-    widget.taskUpdateStatusInProgress(true);
-
-    final response = await NetworkCaller.getRequest(
-        Urls.updateTaskStatus(status, widget.task.sId ?? ''));
-    if (response.isSuccess) {
-      widget.onStatusChangeRefresh();
-    }
-
-    widget.taskUpdateStatusInProgress(false);
-  }
-
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -92,12 +81,15 @@ class _TaskListCardState extends State<TaskListCard> {
                               context: context,
                               builder: (context) {
                                 return AlertDialog(
-                                  title: const Text(
+                                  title: Text(
                                     'Warning',
-                                    style: TextStyle(color: Colors.black),
+                                    style:
+                                        Theme.of(context).textTheme.bodyLarge,
                                   ),
-                                  content: const Text(
+                                  content: Text(
                                     "Are you sure that you want to delete it permanently?",
+                                    style:
+                                        Theme.of(context).textTheme.bodySmall,
                                   ),
                                   actions: [
                                     TextButton(
@@ -138,7 +130,10 @@ class _TaskListCardState extends State<TaskListCard> {
   void showUpdateDialog() {
     List<ListTile> items = TaskStatus.values
         .map((e) => ListTile(
-              title: Text(e.name),
+              title: Text(
+                e.name,
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
               onTap: () {
                 getTaskUpdateStatus(e.name);
                 Navigator.pop(context);
@@ -150,9 +145,9 @@ class _TaskListCardState extends State<TaskListCard> {
         context: context,
         builder: (context) {
           return AlertDialog(
-            title: const Text(
+            title: Text(
               "Update Status",
-              style: TextStyle(color: Colors.black),
+              style: Theme.of(context).textTheme.bodyLarge,
             ),
             content: Column(
               mainAxisSize: MainAxisSize.min,
@@ -173,10 +168,18 @@ class _TaskListCardState extends State<TaskListCard> {
         });
   }
 
-  Future<void> deleteTask() async {
-    if (mounted) {
-      Navigator.pop(context);
+  Future<void> getTaskUpdateStatus(String status) async {
+    widget.taskUpdateStatusInProgress(true);
+    final response = await NetworkCaller.getRequest(
+        Urls.updateTaskStatus(status, widget.task.sId ?? ''));
+    if (response.isSuccess) {
+      widget.onStatusChangeRefresh();
     }
+    widget.taskUpdateStatusInProgress(false);
+  }
+
+  Future<void> deleteTask() async {
+    Get.back();
     widget.taskUpdateStatusInProgress(true);
     final response = await NetworkCaller.getRequest(
       Urls.deleteTask(widget.task.sId.toString()),

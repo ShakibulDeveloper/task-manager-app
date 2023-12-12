@@ -5,7 +5,7 @@ import 'package:task_manager_app/ui/screens/main_bottom_nav_screen.dart';
 
 class SplashScreenTimeOutController extends GetxController {
   void splashScreenTimeOut() async {
-    bool isLoggedIn = await Auth.checkUserAuthState();
+    bool isLoggedIn = await Get.find<AuthController>().checkUserAuthState();
 
     Future.delayed(const Duration(seconds: 2)).then(
       (value) => Get.offAll(

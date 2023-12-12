@@ -1,14 +1,10 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:task_manager_app/data/models/user_model.dart';
-import 'package:task_manager_app/data/network_caller/network_caller.dart';
-import 'package:task_manager_app/data/network_caller/network_response.dart';
-import 'package:task_manager_app/data/utility/urls.dart';
 import 'package:task_manager_app/style/style.dart';
 import 'package:task_manager_app/ui/controller/auth_controller.dart';
 import 'package:task_manager_app/ui/controller/input_validations.dart';
+import 'package:task_manager_app/ui/controller/update_profile_controller.dart';
 import 'package:task_manager_app/ui/widgets/background_image.dart';
 import 'package:task_manager_app/ui/widgets/snack_bar.dart';
 import 'package:task_manager_app/ui/widgets/top_profile_summary_card.dart';
@@ -32,16 +28,19 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
       TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
-  bool updateProfileInProgress = false;
   XFile? photo;
+
+  final AuthController _auth = Get.find<AuthController>();
+  final UpdateProfileController _updateProfileController =
+      Get.find<UpdateProfileController>();
 
   @override
   void initState() {
     super.initState();
-    _emailInputTEController.text = Auth.user?.email ?? '';
-    _firstNameInputTEController.text = Auth.user?.firstName ?? '';
-    _lastNameInputTEController.text = Auth.user?.lastName ?? '';
-    _mobileInputTEController.text = Auth.user?.mobile ?? '';
+    _emailInputTEController.text = _auth.user?.email ?? '';
+    _firstNameInputTEController.text = _auth.user?.firstName ?? '';
+    _lastNameInputTEController.text = _auth.user?.lastName ?? '';
+    _mobileInputTEController.text = _auth.user?.mobile ?? '';
   }
 
   @override
@@ -125,6 +124,7 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
                             controller: _emailInputTEController,
                             decoration:
                                 const InputDecoration(hintText: "Email"),
+                            style: Theme.of(context).textTheme.bodyMedium,
                             validator: FormValidation.emailValidation,
                           ),
                           const SizedBox(height: 8),
@@ -132,6 +132,7 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
                             controller: _firstNameInputTEController,
                             decoration:
                                 const InputDecoration(hintText: "First Name"),
+                            style: Theme.of(context).textTheme.bodyMedium,
                             validator: FormValidation.inputValidation,
                           ),
                           const SizedBox(height: 8),
@@ -139,6 +140,7 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
                             controller: _lastNameInputTEController,
                             decoration:
                                 const InputDecoration(hintText: "Last Name"),
+                            style: Theme.of(context).textTheme.bodyMedium,
                             validator: FormValidation.inputValidation,
                           ),
                           const SizedBox(height: 8),
@@ -146,30 +148,38 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
                             controller: _mobileInputTEController,
                             decoration: const InputDecoration(
                                 hintText: "Mobile Number"),
+                            style: Theme.of(context).textTheme.bodyMedium,
                             validator: FormValidation.phoneNumberValidation,
                           ),
                           const SizedBox(height: 8),
                           TextFormField(
                             controller: _passwordInputTEController,
                             decoration: const InputDecoration(
-                                hintText: "Password (optional)"),
+                              hintText: "Password (optional)",
+                            ),
+                            style: Theme.of(context).textTheme.bodyMedium,
                           ),
                           const SizedBox(height: 8),
                           SizedBox(
                             width: double.infinity,
-                            child: Visibility(
-                              visible: updateProfileInProgress == false,
-                              replacement: Center(
-                                child: CircularProgressIndicator(
-                                  color: PrimaryColor.color,
+                            child: GetBuilder<UpdateProfileController>(
+                                builder: (updateProfileController) {
+                              return Visibility(
+                                visible: updateProfileController
+                                        .updateProfileInProgress ==
+                                    false,
+                                replacement: Center(
+                                  child: CircularProgressIndicator(
+                                    color: PrimaryColor.color,
+                                  ),
                                 ),
-                              ),
-                              child: ElevatedButton(
-                                onPressed: updateProfile,
-                                child: const Icon(
-                                    Icons.arrow_circle_right_outlined),
-                              ),
-                            ),
+                                child: ElevatedButton(
+                                  onPressed: updateProfile,
+                                  child: const Icon(
+                                      Icons.arrow_circle_right_outlined),
+                                ),
+                              );
+                            }),
                           ),
                         ],
                       ),
@@ -182,54 +192,6 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
         ),
       ),
     );
-  }
-
-  Future<void> updateProfile() async {
-    String? imageInBase64;
-
-    if (_formKey.currentState!.validate()) {
-      updateProfileInProgress = true;
-      if (mounted) {
-        setState(() {});
-      }
-
-      Map<String, dynamic> inputData = {
-        "email": _emailInputTEController.text.trim(),
-        "firstName": _firstNameInputTEController.text.trim(),
-        "lastName": _lastNameInputTEController.text.trim(),
-        "mobile": _mobileInputTEController.text.trim(),
-      };
-      if (_passwordInputTEController.text.isNotEmpty) {
-        inputData["password"] = _passwordInputTEController.text;
-      }
-      if (photo != null) {
-        List<int> imageInBytes = await photo!.readAsBytes();
-        imageInBase64 = base64Encode(imageInBytes);
-        inputData["photo"] = imageInBase64;
-      }
-      final NetworkResponse response =
-          await NetworkCaller.postRequest(Urls.profileUpdate, body: inputData);
-      updateProfileInProgress = false;
-      if (mounted) {
-        setState(() {});
-      }
-      if (response.isSuccess) {
-        Auth.updateUserInformation(UserModel(
-          email: _emailInputTEController.text.trim(),
-          firstName: _firstNameInputTEController.text.trim(),
-          lastName: _lastNameInputTEController.text.trim(),
-          mobile: _mobileInputTEController.text.trim(),
-          photo: imageInBase64 ?? Auth.user?.photo,
-        ));
-        if (mounted) {
-          showSnackBar(context, "Profile Updated Successfully!");
-        }
-      } else {
-        if (mounted) {
-          showSnackBar(context, "Action Failed! Please Try Again.", true);
-        }
-      }
-    }
   }
 
   void showPhotoPickerBottomModal() {
@@ -312,5 +274,27 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
         );
       },
     );
+  }
+
+  Future<void> updateProfile() async {
+    if (_formKey.currentState!.validate()) {
+      final response = await _updateProfileController.updateProfile(
+        _emailInputTEController.text.trim(),
+        _firstNameInputTEController.text.trim(),
+        _lastNameInputTEController.text.trim(),
+        _mobileInputTEController.text.trim(),
+        _passwordInputTEController.text,
+        photo,
+      );
+      if (response) {
+        if (mounted) {
+          showSnackBar(context, _updateProfileController.message);
+        }
+      } else {
+        if (mounted) {
+          showSnackBar(context, _updateProfileController.message, true);
+        }
+      }
+    }
   }
 }

@@ -21,55 +21,56 @@ class TopProfileSummeryCard extends StatefulWidget {
 }
 
 class _TopProfileSummeryCardState extends State<TopProfileSummeryCard> {
-  String imageFormat = Auth.user?.photo ?? '';
-
   @override
   Widget build(BuildContext context) {
-    if (imageFormat.startsWith('data:image')) {
-      imageFormat =
-          imageFormat.replaceFirst(RegExp(r'data:image/[^;]+;base64,'), '');
-    }
-    Uint8List imageInBytes = const Base64Decoder().convert(imageFormat);
-    return ListTile(
-      onTap: () {
-        if (widget.onTapStatus == true) {
-          Get.to(const UpdateProfileScreen());
-        }
-      },
-      leading: Visibility(
-        visible: imageInBytes.isNotEmpty,
-        replacement: const CircleAvatar(
-          backgroundColor: Colors.lightGreen,
-          child: Icon(Icons.account_circle_outlined),
-        ),
-        child: CircleAvatar(
-          backgroundImage: Image.memory(
-            imageInBytes,
-            fit: BoxFit.cover,
-          ).image,
-          backgroundColor: Colors.lightGreen,
-        ),
-      ),
-      title: Text(
-        userFullName,
-        style: Theme.of(context).textTheme.titleLarge,
-      ),
-      subtitle: Text(
-        Auth.user?.email ?? '',
-        style: Theme.of(context).textTheme.titleSmall,
-      ),
-      trailing: IconButton(
-        onPressed: () async {
-          await Auth.clearUserAuthState();
-          Get.offAll(const LoginScreen());
+    return GetBuilder<AuthController>(builder: (auth) {
+      String imageFormat = auth.user?.photo ?? '';
+      if (imageFormat.startsWith('data:image')) {
+        imageFormat =
+            imageFormat.replaceFirst(RegExp(r'data:image/[^;]+;base64,'), '');
+      }
+      Uint8List imageInBytes = const Base64Decoder().convert(imageFormat);
+      return ListTile(
+        onTap: () {
+          if (widget.onTapStatus == true) {
+            Get.to(const UpdateProfileScreen());
+          }
         },
-        icon: const Icon(Icons.logout),
-      ),
-      tileColor: PrimaryColor.color,
-    );
+        leading: Visibility(
+          visible: imageInBytes.isNotEmpty,
+          replacement: const CircleAvatar(
+            backgroundColor: Colors.lightGreen,
+            child: Icon(Icons.account_circle_outlined),
+          ),
+          child: CircleAvatar(
+            backgroundImage: Image.memory(
+              imageInBytes,
+              fit: BoxFit.cover,
+            ).image,
+            backgroundColor: Colors.lightGreen,
+          ),
+        ),
+        title: Text(
+          userFullName(auth),
+          style: Theme.of(context).textTheme.titleLarge,
+        ),
+        subtitle: Text(
+          auth.user?.email ?? '',
+          style: Theme.of(context).textTheme.titleSmall,
+        ),
+        trailing: IconButton(
+          onPressed: () async {
+            await AuthController.clearUserAuthState();
+            Get.offAll(const LoginScreen());
+          },
+          icon: const Icon(Icons.logout, color: Colors.white),
+        ),
+        tileColor: PrimaryColor.color,
+      );
+    });
   }
 
-  String get userFullName {
-    return '${Auth.user?.firstName ?? ''} ${Auth.user?.lastName ?? ''}';
+  String userFullName(AuthController auth) {
+    return '${auth.user?.firstName ?? ''} ${auth.user?.lastName ?? ''}';
   }
 }

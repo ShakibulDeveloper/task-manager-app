@@ -11,7 +11,7 @@ class NetworkCaller {
       final Response response =
           await post(Uri.parse(url), body: jsonEncode(body), headers: {
         'Content-type': 'application/json',
-        'token': Auth.token.toString(),
+        'token': AuthController.token.toString(),
       });
       log(response.statusCode.toString());
       log(response.body);
@@ -23,7 +23,7 @@ class NetworkCaller {
         );
       } else if (response.statusCode == 401) {
         if (isLogin == false) {
-          Auth.backToLogin();
+          AuthController.backToLogin();
         }
         return NetworkResponse(
           isSuccess: false,
@@ -47,7 +47,7 @@ class NetworkCaller {
     try {
       final Response response = await get(Uri.parse(url), headers: {
         'Content-type': 'application/json',
-        'token': Auth.token.toString(),
+        'token': AuthController.token.toString(),
       });
       log(response.statusCode.toString());
       log(response.body);
@@ -58,7 +58,7 @@ class NetworkCaller {
           jsonResponse: jsonDecode(response.body),
         );
       } else if (response.statusCode == 401) {
-        Auth.backToLogin();
+        AuthController.backToLogin();
         return NetworkResponse(
           isSuccess: false,
           statusCode: response.statusCode,

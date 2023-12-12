@@ -109,7 +109,7 @@ class _NewTaskScreenState extends State<NewTaskScreen> {
           Get.to(const AddNewTaskScreen());
         },
         backgroundColor: PrimaryColor.color,
-        child: const Icon(Icons.add),
+        child: const Icon(Icons.add, color: Colors.white),
       ),
     );
   }

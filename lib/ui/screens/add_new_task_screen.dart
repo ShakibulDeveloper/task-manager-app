@@ -54,6 +54,7 @@ class _AddNewTaskScreenState extends State<AddNewTaskScreen> {
                             decoration: const InputDecoration(
                               hintText: "Subject",
                             ),
+                            style: Theme.of(context).textTheme.bodyMedium,
                             validator: FormValidation.inputValidation,
                           ),
                           const SizedBox(height: 8),
@@ -62,6 +63,7 @@ class _AddNewTaskScreenState extends State<AddNewTaskScreen> {
                             maxLines: 5,
                             decoration:
                                 const InputDecoration(hintText: "Description"),
+                            style: Theme.of(context).textTheme.bodyMedium,
                             validator: FormValidation.inputValidation,
                           ),
                           const SizedBox(height: 8),

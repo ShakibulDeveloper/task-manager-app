@@ -50,6 +50,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       decoration: const InputDecoration(
                         hintText: "Email",
                       ),
+                      style: Theme.of(context).textTheme.bodyMedium,
                       validator: FormValidation.emailValidation,
                     ),
                     const SizedBox(height: 8),
@@ -59,6 +60,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       decoration: const InputDecoration(
                         hintText: "Password",
                       ),
+                      style: Theme.of(context).textTheme.bodyMedium,
                       validator: FormValidation.inputValidation,
                     ),
                     const SizedBox(height: 8),

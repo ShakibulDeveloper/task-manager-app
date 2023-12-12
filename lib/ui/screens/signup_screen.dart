@@ -53,6 +53,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       decoration: const InputDecoration(
                         hintText: "Email",
                       ),
+                      style: Theme.of(context).textTheme.bodyMedium,
                       validator: FormValidation.emailValidation,
                     ),
                     const SizedBox(height: 8),
@@ -61,6 +62,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       decoration: const InputDecoration(
                         hintText: "First Name",
                       ),
+                      style: Theme.of(context).textTheme.bodyMedium,
                       validator: FormValidation.inputValidation,
                     ),
                     const SizedBox(height: 8),
@@ -69,6 +71,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       decoration: const InputDecoration(
                         hintText: "Last Name",
                       ),
+                      style: Theme.of(context).textTheme.bodyMedium,
                       validator: FormValidation.inputValidation,
                     ),
                     const SizedBox(height: 8),
@@ -78,6 +81,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       decoration: const InputDecoration(
                         hintText: "Mobile Name",
                       ),
+                      style: Theme.of(context).textTheme.bodyMedium,
                       validator: FormValidation.phoneNumberValidation,
                     ),
                     const SizedBox(height: 8),
@@ -87,6 +91,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       decoration: const InputDecoration(
                         hintText: "Password",
                       ),
+                      style: Theme.of(context).textTheme.bodyMedium,
                       validator: FormValidation.inputValidation,
                     ),
                     const SizedBox(height: 8),

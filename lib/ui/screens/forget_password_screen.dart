@@ -52,6 +52,7 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
                       decoration: const InputDecoration(
                         hintText: "Email",
                       ),
+                      style: Theme.of(context).textTheme.bodyMedium,
                       validator: FormValidation.emailValidation,
                     ),
                     const SizedBox(height: 8),

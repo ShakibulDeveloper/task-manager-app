@@ -56,6 +56,7 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
                       decoration: const InputDecoration(
                         hintText: "New Password",
                       ),
+                      style: Theme.of(context).textTheme.bodyMedium,
                       validator: FormValidation.inputValidation,
                     ),
                     const SizedBox(height: 8),
@@ -64,6 +65,7 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
                       decoration: const InputDecoration(
                         hintText: "Confirm Password",
                       ),
+                      style: Theme.of(context).textTheme.bodyMedium,
                       validator: FormValidation.inputValidation,
                     ),
                     const SizedBox(height: 8),
